@@ -1,0 +1,52 @@
+- name: Playbook
+  hosts: all
+  become: yes
+  vars:
+    greeting: oha- ansilbe
+    server_name: locahost
+    server_location_proxy_pass: http://127.0.0.1:8080
+    conf_file: /etc/nginx/nginx.conf.default
+  tasks:
+    - name: upgrade all packages
+      dnf:
+        name: "*"
+        state: latest
+
+    - name: install golang
+      dnf: name=golang
+
+    - name: install nginx
+      dnf: name=nginx update_cache=yes
+      notify:
+      - restart nginx
+
+    - name: copy nginx config file
+      template: src=conf/nginx.conf dest=/etc/nginx/nginx.conf
+      notify: restart nginx
+
+    - name: Copy app
+      copy:
+        src: ../main
+        dest: /usr/local/bin/goapp
+        owner: root
+        group: root
+        mode: '744'
+
+    - name: Copy service file
+      copy:
+        src: conf/goapp.service
+        dest: /lib/systemd/system/goapp.service
+        owner: root
+        group: root
+        mode: '644'
+
+    - name: restart goapp
+      service: name=goapp state=restarted
+
+    - name: SELinuxが有効でもnginxのproxy_passが機能するようにする
+      shell: |
+        setsebool httpd_can_network_connect 1 -P
+
+  handlers:
+    - name: restart nginx
+      service: name=nginx state=restarted

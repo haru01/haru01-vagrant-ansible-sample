@@ -1,0 +1,11 @@
+[Unit]
+Description=My Go App service
+
+[Service]
+ExecStart=/usr/local/bin/goapp
+KillMode=process
+Restart=on-failure
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
