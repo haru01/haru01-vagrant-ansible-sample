@@ -1,6 +1,6 @@
 ## 概要
 
-Vagrant & Ansibleを使って、ローカルマシンで、nginx - WebAPIアプリ構築の練習サンプル
+Vagrant & Ansibleを使って、ローカルマシンで、Nginx - WebAPIアプリ構築の練習サンプル
 
 ## 準備
 * Virtual Boxのインストール
@@ -15,40 +15,53 @@ https://docs.ansible.com/ansible/2.9_ja/installation_guide/intro_installation.ht
 * Goのインストール
 https://go.dev/doc/install
 
-## 開発環境のprivate_networkの変更
-
-```
-vi Vagrantfile
-```
-private_networkの ipを自身のPC環境に合わせて書き換える。
-既存設定は、192.168.56.10
-
 ## VirtualBox内のLinuxでプロビジョニング
+
 ```bash
 cd vagrant-ansible-sample
 
 # main.goのビルド
 make build
 
-# 起動してプロビジョニング
+# Linuxを起動してプロビジョニング
 vagrant up
 vagrant provision
 ```
 
 ## Nginx -> GoのWebアプリの疎通確認
 
-```
+```bash
 curl http://192.168.56.10/api/hello
 ```
-private_networkの ipを自身のPC環境に合わせて書き換える
+Hello Go Appと出力されればOK
 
-## ansible-playbookからプロビジョニングする場合
+## トラブルシュート
+
+### サービスが起動しているか確認
+
+ログイン
 ```
+vagrant ssh
+```
+サービスステータスの確認
+```
+systemctl status
+```
+
+### ログの確認
+```
+sudo journalctl -u goapp
+sudo journalctl -u nginx
+```
+## ansible-playbookからプロビジョニングする場合
+
+```bash
 ansible-playbook -i .vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory provisioning/playbook.yml
 ```
 
 ## 後処理
-```
+
+```bash
 vagrant destroy
 ```
 
